@@ -508,14 +508,14 @@ export default function ThreeCarViewer({ onHotspotSelect, activeHotspotId }: Thr
       });
     });
 
-    // Raycaster for part selection
+    // Raycaster for part selection (supports mouse & touch coordinates)
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
 
-    const raycast = (e: MouseEvent): THREE.Mesh | null => {
+    const raycastAt = (clientX: number, clientY: number): THREE.Mesh | null => {
       const bounds = renderer.domElement.getBoundingClientRect();
-      pointer.x = ((e.clientX - bounds.left) / bounds.width) * 2 - 1;
-      pointer.y = -((e.clientY - bounds.top) / bounds.height) * 2 + 1;
+      pointer.x = ((clientX - bounds.left) / bounds.width) * 2 - 1;
+      pointer.y = -((clientY - bounds.top) / bounds.height) * 2 + 1;
       raycaster.setFromCamera(pointer, camera);
       const hits = raycaster.intersectObjects(masterGroup.children, true);
       for (const hit of hits) {
@@ -524,7 +524,7 @@ export default function ThreeCarViewer({ onHotspotSelect, activeHotspotId }: Thr
       return null;
     };
 
-    // Mouse handlers
+    // Mouse drag & zoom handlers
     const onMouseDown = (e: MouseEvent) => {
       isDragging.current = true;
       dragMoved.current = false;
@@ -557,17 +557,9 @@ export default function ThreeCarViewer({ onHotspotSelect, activeHotspotId }: Thr
       }
     };
 
-    // Double Click: Disabled (prevent accidental car explode/hide)
-    const onDblClick = (e: MouseEvent) => {
-      e.preventDefault();
-      // Explode is available explicitly via the 'EXPLODE ALL PARTS' button in the toolbar
-    };
-
-    // Single Click: Select Part & Show Ferrari Engineering Dossier
-    const onClick = (e: MouseEvent) => {
-      if (dragMoved.current) return;
-
-      const hit = raycast(e);
+    // Shared handler when any car part is tapped or clicked
+    const selectPartAtCoords = (clientX: number, clientY: number) => {
+      const hit = raycastAt(clientX, clientY);
       if (!hit) {
         setSelectedPartLabel(null);
         setSelectedPartDetail(null);
@@ -597,19 +589,56 @@ export default function ThreeCarViewer({ onHotspotSelect, activeHotspotId }: Thr
       }
     };
 
-    // Touch handlers
+    // Trigger explode / assemble separation animation
+    const triggerExplodeToggle = () => {
+      isExplodedRef.current = !isExplodedRef.current;
+      setIsExploded(isExplodedRef.current);
+      setSelectedPartLabel(null);
+      setSelectedPartDetail(null);
+      selectedMeshRef.current = null;
+      if (pinRef.current) pinRef.current.style.display = "none";
+
+      const magnitude = 1.85;
+      parts.forEach((p) => {
+        if (isExplodedRef.current) {
+          p.targetOffset.copy(p.explodeDir).multiplyScalar(magnitude);
+        } else {
+          p.targetOffset.set(0, 0, 0);
+        }
+      });
+    };
+
+    // Double Click: Toggle Explode ALL Parts
+    const onDblClick = () => {
+      if (dragMoved.current) return;
+      triggerExplodeToggle();
+    };
+
+    // Single Click: Select Part & Show Ferrari Engineering Dossier
+    const onClick = (e: MouseEvent) => {
+      if (dragMoved.current) return;
+      selectPartAtCoords(e.clientX, e.clientY);
+    };
+
+    // Touch handlers with tap & double-tap detection for mobile phones
+    let lastTapTime = 0;
+    let touchStartX = 0;
+    let touchStartY = 0;
+
     const onTouchStart = (e: TouchEvent) => {
       if (e.touches.length !== 1) return;
       isDragging.current = true;
       dragMoved.current = false;
-      lastMouse.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      lastMouse.current = { x: touchStartX, y: touchStartY };
     };
 
     const onTouchMove = (e: TouchEvent) => {
       if (!isDragging.current || e.touches.length !== 1) return;
       const dx = e.touches[0].clientX - lastMouse.current.x;
       const dy = e.touches[0].clientY - lastMouse.current.y;
-      if (Math.abs(dx) > 2 || Math.abs(dy) > 2) dragMoved.current = true;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) dragMoved.current = true;
       targetRot.current.y += dx * 0.007;
       targetRot.current.x += dy * 0.007;
       targetRot.current.x = Math.max(-0.18, Math.min(0.75, targetRot.current.x));
@@ -618,8 +647,24 @@ export default function ThreeCarViewer({ onHotspotSelect, activeHotspotId }: Thr
       setIsRotating(false);
     };
 
-    const onTouchEnd = () => {
+    const onTouchEnd = (e: TouchEvent) => {
       isDragging.current = false;
+      // If user tapped without dragging
+      if (!dragMoved.current && e.changedTouches.length > 0) {
+        const touch = e.changedTouches[0];
+        const now = Date.now();
+        const timeDiff = now - lastTapTime;
+
+        // Double-tap on mobile phone toggles explode/separation
+        if (timeDiff > 0 && timeDiff < 320) {
+          triggerExplodeToggle();
+          lastTapTime = 0;
+        } else {
+          // Single-tap selects the part and displays its name
+          selectPartAtCoords(touch.clientX, touch.clientY);
+          lastTapTime = now;
+        }
+      }
     };
 
     container.addEventListener("mousedown", onMouseDown);
@@ -929,15 +974,15 @@ export default function ThreeCarViewer({ onHotspotSelect, activeHotspotId }: Thr
         </button>
       </div>
 
-      {/* ── Interactive Part Engineering Dossier Card (Appears when a part is selected) ── */}
+      {/* ── Interactive Part Engineering Dossier Card (Compact on mobile so 3D car remains 100% visible) ── */}
       {selectedPartDetail && (
         <div
-          className="absolute top-28 sm:top-24 left-3 sm:left-5 z-30 w-[calc(100vw-24px)] sm:w-[320px] max-w-[340px] max-h-[55vh] overflow-y-auto p-3.5 sm:p-4 rounded-xl border border-gold/30 bg-zinc-950/98 backdrop-blur-xl shadow-2xl animate-in fade-in slide-in-from-left-4 duration-200"
+          className="absolute z-30 sm:top-24 sm:left-5 bottom-28 left-2 right-2 sm:bottom-auto sm:right-auto sm:w-[320px] max-h-[38vh] sm:max-h-[55vh] overflow-y-auto p-3 sm:p-4 rounded-xl border border-gold/40 bg-zinc-950/90 backdrop-blur-xl shadow-2xl animate-in fade-in slide-in-from-bottom-2 sm:slide-in-from-left-4 duration-200"
           style={{ boxShadow: "0 8px 40px rgba(0,0,0,0.9), 0 0 25px rgba(212,175,55,0.15)" }}
         >
-          <div className="flex items-start justify-between border-b border-zinc-800 pb-2 sm:pb-2.5 mb-2.5 sm:mb-3">
-            <div>
-              <span className="font-mono text-[8px] sm:text-[9px] text-gold uppercase tracking-widest block">
+          <div className="flex items-start justify-between border-b border-zinc-800 pb-1.5 sm:pb-2.5 mb-1.5 sm:mb-3">
+            <div className="pr-2">
+              <span className="font-mono text-[8px] sm:text-[9px] text-gold uppercase tracking-widest block font-semibold">
                 {selectedPartDetail.category} // {selectedPartDetail.code}
               </span>
               <h4 className="font-display font-black text-xs sm:text-sm text-white uppercase leading-snug">
@@ -946,28 +991,27 @@ export default function ThreeCarViewer({ onHotspotSelect, activeHotspotId }: Thr
             </div>
             <button
               onClick={() => setSelectedPartDetail(null)}
-              className="text-zinc-500 hover:text-white p-1 rounded-lg hover:bg-zinc-900 transition-colors"
+              className="text-zinc-500 hover:text-white p-1 rounded-lg hover:bg-zinc-900 transition-colors flex-shrink-0"
+              title="Close Dossier"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="flex flex-col gap-1.5 sm:gap-2 text-[10px] sm:text-[11px] mb-2.5 sm:mb-3">
-            <div>
-              <span className="text-zinc-500 text-[9px] sm:text-[10px] block font-mono">SPECIFICATION</span>
-              <span className="text-zinc-200 font-semibold">{selectedPartDetail.specs}</span>
+          <div className="flex flex-col gap-1 sm:gap-2 text-[9.5px] sm:text-[11px] mb-2 sm:mb-3">
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <span className="text-zinc-500 text-[8px] sm:text-[10px] block font-mono">SPECIFICATION</span>
+                <span className="text-zinc-200 font-semibold text-[9px] sm:text-[11px] leading-tight block">{selectedPartDetail.specs}</span>
+              </div>
+              <div>
+                <span className="text-zinc-500 text-[8px] sm:text-[10px] block font-mono">WEIGHT</span>
+                <span className="text-amber-300 font-mono font-bold text-[9px] sm:text-[11px] leading-tight block">{selectedPartDetail.weight}</span>
+              </div>
             </div>
-            <div>
-              <span className="text-zinc-500 text-[9px] sm:text-[10px] block font-mono">MATERIAL</span>
-              <span className="text-zinc-300">{selectedPartDetail.material}</span>
-            </div>
-            <div>
-              <span className="text-zinc-500 text-[9px] sm:text-[10px] block font-mono">COMPONENT WEIGHT</span>
-              <span className="text-amber-300 font-mono font-bold">{selectedPartDetail.weight}</span>
-            </div>
-            <div className="bg-zinc-900/70 p-2 sm:p-2.5 rounded-lg border border-zinc-800/60 mt-0.5">
-              <span className="text-[9px] sm:text-[10px] text-gold font-mono uppercase block mb-0.5">ENGINEERING NOTES</span>
-              <p className="text-[9.5px] sm:text-[10.5px] text-zinc-400 leading-relaxed font-light">
+            <div className="bg-zinc-900/70 p-1.5 sm:p-2.5 rounded-lg border border-zinc-800/60 mt-0.5">
+              <span className="text-[8px] sm:text-[10px] text-gold font-mono uppercase block mb-0.5">ENGINEERING NOTES</span>
+              <p className="text-[9px] sm:text-[10.5px] text-zinc-400 leading-relaxed font-light line-clamp-2 sm:line-clamp-none">
                 {selectedPartDetail.engineeringNotes}
               </p>
             </div>
