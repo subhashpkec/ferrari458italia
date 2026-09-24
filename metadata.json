@@ -1,0 +1,6 @@
+{
+  "name": "Luxury Hypercar Showcase",
+  "description": "An ultra-premium interactive showcase inspired by Koenigsegg Regera, including real-time performance dynos, 3D aerodynamics viewer, and configurator.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
