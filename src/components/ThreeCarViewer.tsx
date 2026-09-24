@@ -557,24 +557,10 @@ export default function ThreeCarViewer({ onHotspotSelect, activeHotspotId }: Thr
       }
     };
 
-    // Double Click: Toggle Explode ALL Parts
-    const onDblClick = () => {
-      if (dragMoved.current) return;
-      isExplodedRef.current = !isExplodedRef.current;
-      setIsExploded(isExplodedRef.current);
-      setSelectedPartLabel(null);
-      setSelectedPartDetail(null);
-      selectedMeshRef.current = null;
-      if (pinRef.current) pinRef.current.style.display = "none";
-
-      const magnitude = 1.85;
-      parts.forEach((p) => {
-        if (isExplodedRef.current) {
-          p.targetOffset.copy(p.explodeDir).multiplyScalar(magnitude);
-        } else {
-          p.targetOffset.set(0, 0, 0);
-        }
-      });
+    // Double Click: Disabled (prevent accidental car explode/hide)
+    const onDblClick = (e: MouseEvent) => {
+      e.preventDefault();
+      // Explode is available explicitly via the 'EXPLODE ALL PARTS' button in the toolbar
     };
 
     // Single Click: Select Part & Show Ferrari Engineering Dossier
@@ -846,9 +832,9 @@ export default function ThreeCarViewer({ onHotspotSelect, activeHotspotId }: Thr
       </div>
 
       {/* ── Top Left: Genuine Ferrari 458 Italia Diagnostics HUD ── */}
-      <div className="absolute top-5 left-5 z-20 pointer-events-none max-w-[270px]">
+      <div className="absolute top-3 left-3 sm:top-5 sm:left-5 z-20 pointer-events-none max-w-[200px] sm:max-w-[270px]">
         <div
-          className="p-4 rounded-xl flex flex-col gap-2.5"
+          className="p-2.5 sm:p-4 rounded-xl flex flex-col gap-1.5 sm:gap-2.5"
           style={{
             background: "linear-gradient(135deg, rgba(8,8,12,0.94) 0%, rgba(18,12,12,0.94) 100%)",
             border: "1px solid rgba(212,0,0,0.3)",
@@ -856,69 +842,69 @@ export default function ThreeCarViewer({ onHotspotSelect, activeHotspotId }: Thr
             boxShadow: "0 8px 32px rgba(0,0,0,0.8)",
           }}
         >
-          <div className="flex items-center justify-between border-b border-zinc-800/80 pb-2">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-red-600 animate-ping" />
-              <span className="font-display font-black text-xs text-white uppercase tracking-wider">
+          <div className="flex items-center justify-between border-b border-zinc-800/80 pb-1.5 sm:pb-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-red-600 animate-ping" />
+              <span className="font-display font-black text-[10px] sm:text-xs text-white uppercase tracking-wider">
                 Ferrari 458 Italia
               </span>
             </div>
-            <span className="font-mono text-[9px] text-zinc-500 uppercase">MARANELLO</span>
+            <span className="font-mono text-[8px] sm:text-[9px] text-zinc-500 uppercase">MARANELLO</span>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 text-[10.5px]">
+          <div className="grid grid-cols-2 gap-1 sm:gap-2 text-[9px] sm:text-[10.5px]">
             <div>
-              <span className="text-zinc-500 block text-[9px] font-mono">POWERTRAIN</span>
-              <span className="font-mono text-white font-bold">4.5L Flat-Plane V8</span>
+              <span className="text-zinc-500 block text-[8px] sm:text-[9px] font-mono">POWERTRAIN</span>
+              <span className="font-mono text-white font-bold leading-tight block">4.5L V8</span>
             </div>
             <div>
-              <span className="text-zinc-500 block text-[9px] font-mono">POWER OUTPUT</span>
-              <span className="font-mono text-red-400 font-bold">570 CV @ 9k RPM</span>
+              <span className="text-zinc-500 block text-[8px] sm:text-[9px] font-mono">POWER</span>
+              <span className="font-mono text-red-400 font-bold leading-tight block">570 CV</span>
             </div>
             <div>
-              <span className="text-zinc-500 block text-[9px] font-mono">0-100 KM/H</span>
-              <span className="font-mono text-gold font-bold">3.4 Seconds</span>
+              <span className="text-zinc-500 block text-[8px] sm:text-[9px] font-mono">0-100</span>
+              <span className="font-mono text-gold font-bold leading-tight block">3.4s</span>
             </div>
             <div>
-              <span className="text-zinc-500 block text-[9px] font-mono">TOP SPEED</span>
-              <span className="font-mono text-emerald-400 font-bold">325 km/h</span>
+              <span className="text-zinc-500 block text-[8px] sm:text-[9px] font-mono">V-MAX</span>
+              <span className="font-mono text-emerald-400 font-bold leading-tight block">325 km/h</span>
             </div>
           </div>
 
-          <div className="border-t border-zinc-800/80 pt-2 flex items-center justify-between text-[10px]">
-            <span className="text-zinc-500 font-mono">ASSEMBLY STATE</span>
-            <span className={`font-mono font-bold px-2 py-0.5 rounded text-[9px] ${
+          <div className="border-t border-zinc-800/80 pt-1.5 sm:pt-2 flex items-center justify-between text-[9px] sm:text-[10px]">
+            <span className="text-zinc-500 font-mono text-[8px] sm:text-[10px]">STATE</span>
+            <span className={`font-mono font-bold px-1.5 sm:px-2 py-0.5 rounded text-[8px] sm:text-[9px] ${
               isExploded 
                 ? "bg-amber-500/20 text-amber-300 border border-amber-500/30" 
                 : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
             }`}>
-              {isExploded ? "EXPLODED // CLICK PART" : "FACTORY ASSEMBLED"}
+              {isExploded ? "EXPLODED" : "ASSEMBLED"}
             </span>
           </div>
         </div>
       </div>
 
       {/* ── Top Right: Camera Director & Interactive Lights Toolbar ── */}
-      <div className="absolute top-5 right-5 z-20 flex flex-col gap-2 items-end">
+      <div className="absolute top-3 right-3 sm:top-5 sm:right-5 z-20 flex flex-col gap-1.5 sm:gap-2 items-end max-w-[55vw] sm:max-w-none">
         {/* Camera Views Bar */}
         <div
-          className="flex items-center gap-1 p-1.5 rounded-xl border border-zinc-800/80 bg-zinc-950/90 backdrop-blur-md shadow-xl"
+          className="flex items-center gap-0.5 sm:gap-1 p-1 sm:p-1.5 rounded-xl border border-zinc-800/80 bg-zinc-950/90 backdrop-blur-md shadow-xl overflow-x-auto max-w-full"
         >
-          <span className="font-mono text-[9px] text-zinc-500 px-2 flex items-center gap-1">
+          <span className="font-mono text-[8px] sm:text-[9px] text-zinc-500 px-1 sm:px-2 hidden sm:flex items-center gap-1">
             <Camera className="w-3 h-3 text-gold" /> VIEW:
           </span>
           {[
             { id: "orbit", label: "Orbit" },
             { id: "front", label: "Aero" },
-            { id: "cockpit", label: "F1 Cockpit" },
-            { id: "engine", label: "V8 Bay" },
+            { id: "cockpit", label: "Cockpit" },
+            { id: "engine", label: "V8" },
             { id: "brakes", label: "Brembo" },
             { id: "top", label: "Top" },
           ].map((v) => (
             <button
               key={v.id}
               onClick={() => setCameraPreset(v.id as CameraViewMode)}
-              className={`px-2.5 py-1 rounded text-[10px] font-mono transition-all cursor-pointer ${
+              className={`px-1.5 sm:px-2.5 py-1 rounded text-[8.5px] sm:text-[10px] font-mono transition-all cursor-pointer whitespace-nowrap ${
                 cameraView === v.id
                   ? "bg-red-700 text-white font-bold shadow-md shadow-red-900/40"
                   : "text-zinc-400 hover:text-white hover:bg-zinc-900"
@@ -932,29 +918,29 @@ export default function ThreeCarViewer({ onHotspotSelect, activeHotspotId }: Thr
         {/* Headlight & Taillight Toggle */}
         <button
           onClick={() => setHeadlightsOn(!headlightsOn)}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border text-[11px] font-mono font-bold tracking-wide transition-all shadow-lg cursor-pointer ${
+          className={`flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl border text-[9px] sm:text-[11px] font-mono font-bold tracking-wide transition-all shadow-lg cursor-pointer ${
             headlightsOn
               ? "bg-zinc-900 text-gold border-gold/40 shadow-gold/20"
               : "bg-zinc-950 text-zinc-500 border-zinc-800 hover:text-zinc-300"
           }`}
         >
-          <Lightbulb className={`w-3.5 h-3.5 ${headlightsOn ? "text-gold animate-pulse" : "text-zinc-600"}`} />
-          <span>HEADLIGHTS & BEAMS: {headlightsOn ? "ON" : "OFF"}</span>
+          <Lightbulb className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${headlightsOn ? "text-gold animate-pulse" : "text-zinc-600"}`} />
+          <span>LIGHTS: {headlightsOn ? "ON" : "OFF"}</span>
         </button>
       </div>
 
       {/* ── Interactive Part Engineering Dossier Card (Appears when a part is selected) ── */}
       {selectedPartDetail && (
         <div
-          className="absolute top-24 left-5 z-20 w-[320px] p-4 rounded-xl border border-gold/30 bg-zinc-950/95 backdrop-blur-xl shadow-2xl animate-in fade-in slide-in-from-left-4 duration-200"
+          className="absolute top-28 sm:top-24 left-3 sm:left-5 z-30 w-[calc(100vw-24px)] sm:w-[320px] max-w-[340px] max-h-[55vh] overflow-y-auto p-3.5 sm:p-4 rounded-xl border border-gold/30 bg-zinc-950/98 backdrop-blur-xl shadow-2xl animate-in fade-in slide-in-from-left-4 duration-200"
           style={{ boxShadow: "0 8px 40px rgba(0,0,0,0.9), 0 0 25px rgba(212,175,55,0.15)" }}
         >
-          <div className="flex items-start justify-between border-b border-zinc-800 pb-2.5 mb-3">
+          <div className="flex items-start justify-between border-b border-zinc-800 pb-2 sm:pb-2.5 mb-2.5 sm:mb-3">
             <div>
-              <span className="font-mono text-[9px] text-gold uppercase tracking-widest block">
+              <span className="font-mono text-[8px] sm:text-[9px] text-gold uppercase tracking-widest block">
                 {selectedPartDetail.category} // {selectedPartDetail.code}
               </span>
-              <h4 className="font-display font-black text-sm text-white uppercase leading-snug">
+              <h4 className="font-display font-black text-xs sm:text-sm text-white uppercase leading-snug">
                 {selectedPartDetail.name}
               </h4>
             </div>
@@ -966,22 +952,22 @@ export default function ThreeCarViewer({ onHotspotSelect, activeHotspotId }: Thr
             </button>
           </div>
 
-          <div className="flex flex-col gap-2 text-[11px] mb-3">
+          <div className="flex flex-col gap-1.5 sm:gap-2 text-[10px] sm:text-[11px] mb-2.5 sm:mb-3">
             <div>
-              <span className="text-zinc-500 text-[10px] block font-mono">SPECIFICATION</span>
+              <span className="text-zinc-500 text-[9px] sm:text-[10px] block font-mono">SPECIFICATION</span>
               <span className="text-zinc-200 font-semibold">{selectedPartDetail.specs}</span>
             </div>
             <div>
-              <span className="text-zinc-500 text-[10px] block font-mono">MATERIAL</span>
+              <span className="text-zinc-500 text-[9px] sm:text-[10px] block font-mono">MATERIAL</span>
               <span className="text-zinc-300">{selectedPartDetail.material}</span>
             </div>
             <div>
-              <span className="text-zinc-500 text-[10px] block font-mono">COMPONENT WEIGHT</span>
+              <span className="text-zinc-500 text-[9px] sm:text-[10px] block font-mono">COMPONENT WEIGHT</span>
               <span className="text-amber-300 font-mono font-bold">{selectedPartDetail.weight}</span>
             </div>
-            <div className="bg-zinc-900/70 p-2.5 rounded-lg border border-zinc-800/60 mt-1">
-              <span className="text-[10px] text-gold font-mono uppercase block mb-1">ENGINEERING NOTES</span>
-              <p className="text-[10.5px] text-zinc-400 leading-relaxed font-light">
+            <div className="bg-zinc-900/70 p-2 sm:p-2.5 rounded-lg border border-zinc-800/60 mt-0.5">
+              <span className="text-[9px] sm:text-[10px] text-gold font-mono uppercase block mb-0.5">ENGINEERING NOTES</span>
+              <p className="text-[9.5px] sm:text-[10.5px] text-zinc-400 leading-relaxed font-light">
                 {selectedPartDetail.engineeringNotes}
               </p>
             </div>
@@ -990,7 +976,7 @@ export default function ThreeCarViewer({ onHotspotSelect, activeHotspotId }: Thr
           <div className="flex gap-2">
             <button
               onClick={focusSelectedPart}
-              className="flex-1 py-2 px-3 rounded-lg bg-zinc-900 hover:bg-gold hover:text-black text-zinc-200 font-mono text-[10px] font-bold tracking-wider uppercase transition-all flex items-center justify-center gap-1.5 border border-zinc-800 hover:border-gold cursor-pointer"
+              className="flex-1 py-1.5 sm:py-2 px-3 rounded-lg bg-zinc-900 hover:bg-gold hover:text-black text-zinc-200 font-mono text-[9px] sm:text-[10px] font-bold tracking-wider uppercase transition-all flex items-center justify-center gap-1.5 border border-zinc-800 hover:border-gold cursor-pointer"
             >
               <Camera className="w-3 h-3" /> Focus Part
             </button>
@@ -1001,19 +987,19 @@ export default function ThreeCarViewer({ onHotspotSelect, activeHotspotId }: Thr
       {/* ── 3D Floating Part Marker Pin & Holographic Tag (Projected directly over mesh) ── */}
       <div
         ref={pinRef}
-        className="pointer-events-none absolute top-0 left-0 z-30 flex items-center gap-2.5 transition-opacity duration-150"
+        className="pointer-events-none absolute top-0 left-0 z-30 flex items-center gap-2 transition-opacity duration-150"
         style={{ display: "none" }}
       >
         <div className="relative flex items-center justify-center">
-          <div className="w-5 h-5 rounded-full bg-red-600/40 animate-ping absolute" />
-          <div className="w-3 h-3 rounded-full bg-red-600 border-2 border-white shadow-[0_0_14px_#ef4444]" />
+          <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-red-600/40 animate-ping absolute" />
+          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-red-600 border-2 border-white shadow-[0_0_14px_#ef4444]" />
         </div>
-        <div className="bg-black/95 border border-gold/70 backdrop-blur-md px-3 py-1.5 rounded-lg shadow-2xl text-left pointer-events-auto flex items-center gap-2.5">
-          <div>
-            <span className="font-mono text-[8.5px] text-gold uppercase tracking-wider block font-bold leading-tight">
-              FERRARI COMPONENT // MARKED
+        <div className="bg-black/95 border border-gold/70 backdrop-blur-md px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg shadow-2xl text-left pointer-events-auto flex items-center gap-2 max-w-[200px] sm:max-w-none">
+          <div className="overflow-hidden">
+            <span className="font-mono text-[7.5px] sm:text-[8.5px] text-gold uppercase tracking-wider block font-bold leading-tight truncate">
+              FERRARI COMPONENT
             </span>
-            <span className="font-display font-black text-xs text-white uppercase whitespace-nowrap">
+            <span className="font-display font-black text-[10px] sm:text-xs text-white uppercase truncate block">
               {selectedPartLabel || selectedPartDetail?.name || "Selected Part"}
             </span>
           </div>
@@ -1027,15 +1013,15 @@ export default function ThreeCarViewer({ onHotspotSelect, activeHotspotId }: Thr
             className="text-zinc-500 hover:text-white p-0.5 rounded cursor-pointer transition-colors"
             title="Dismiss Marker"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
           </button>
         </div>
       </div>
 
       {/* ── Center-Bottom: Interactive Tipo F136 FB V8 Engine Console & Manettino ── */}
-      <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-20 w-full max-w-xl px-4 pointer-events-auto">
+      <div className="absolute bottom-16 sm:bottom-20 left-1/2 transform -translate-x-1/2 z-20 w-full max-w-xl px-2 sm:px-4 pointer-events-auto">
         <div
-          className="p-3.5 rounded-2xl flex flex-col gap-2.5"
+          className="p-2 sm:p-3.5 rounded-xl sm:rounded-2xl flex flex-col gap-1.5 sm:gap-2.5"
           style={{
             background: "linear-gradient(180deg, rgba(16,14,14,0.96) 0%, rgba(8,8,10,0.98) 100%)",
             border: "1px solid rgba(212,0,0,0.35)",
@@ -1044,16 +1030,16 @@ export default function ThreeCarViewer({ onHotspotSelect, activeHotspotId }: Thr
           }}
         >
           {/* Top Row: F1 Steering Wheel Shift LEDs & Manettino Modes */}
-          <div className="flex items-center justify-between border-b border-zinc-800/80 pb-2">
+          <div className="flex items-center justify-between border-b border-zinc-800/80 pb-1.5 sm:pb-2 gap-2 overflow-x-auto">
             {/* F1 LED Shift Lights */}
-            <div className="flex items-center gap-1.5">
-              <span className="font-mono text-[9px] text-zinc-500 uppercase mr-1">F1 SHIFT LEDs</span>
+            <div className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
+              <span className="font-mono text-[8px] sm:text-[9px] text-zinc-500 uppercase mr-0.5 sm:mr-1">LEDS</span>
               {shiftLeds.map((led, idx) => {
                 const active = engineRunning && engineRPM >= led.rpm;
                 return (
                   <div
                     key={idx}
-                    className={`w-3 h-3 rounded-full transition-all duration-75 ${
+                    className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all duration-75 ${
                       active ? `${led.color} ${led.glow}` : "bg-zinc-800 border border-zinc-700/50 opacity-40"
                     }`}
                   />
@@ -1062,13 +1048,13 @@ export default function ThreeCarViewer({ onHotspotSelect, activeHotspotId }: Thr
             </div>
 
             {/* Manettino Dial Selector */}
-            <div className="flex items-center gap-1">
-              <span className="font-mono text-[9px] text-zinc-500 uppercase mr-1">MANETTINO</span>
+            <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
+              <span className="font-mono text-[8px] sm:text-[9px] text-zinc-500 uppercase mr-0.5 sm:mr-1 hidden xs:inline">MODE</span>
               {(["WET", "SPORT", "RACE", "CT_OFF", "CST_OFF"] as const).map((mode) => (
                 <button
                   key={mode}
                   onClick={() => handleManettinoChange(mode)}
-                  className={`px-2 py-0.5 rounded text-[9px] font-mono font-bold transition-all cursor-pointer ${
+                  className={`px-1.5 sm:px-2 py-0.5 rounded text-[8px] sm:text-[9px] font-mono font-bold transition-all cursor-pointer whitespace-nowrap ${
                     manettinoMode === mode
                       ? mode === "RACE" || mode === "CT_OFF" || mode === "CST_OFF"
                         ? "bg-red-600 text-white shadow-md shadow-red-600/40"
@@ -1083,29 +1069,29 @@ export default function ThreeCarViewer({ onHotspotSelect, activeHotspotId }: Thr
           </div>
 
           {/* Bottom Row: Start Engine Button, Live Tachometer & Hold-to-Rev Pedal */}
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center justify-between gap-2 sm:gap-4">
             {/* Ferrari Red Engine Start/Stop Button */}
             <button
               onClick={handleToggleEngine}
-              className={`px-4 py-2.5 rounded-xl font-display font-black text-xs tracking-wider uppercase transition-all flex items-center gap-2 border cursor-pointer select-none ${
+              className={`px-2.5 sm:px-4 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl font-display font-black text-[10px] sm:text-xs tracking-wider uppercase transition-all flex items-center gap-1.5 sm:gap-2 border cursor-pointer select-none flex-shrink-0 ${
                 engineRunning
                   ? "bg-red-600 text-white border-red-500 shadow-[0_0_20px_rgba(220,38,38,0.6)] animate-pulse"
                   : "bg-gradient-to-r from-red-900 to-red-950 text-red-200 border-red-800 hover:border-red-600 shadow-md"
               }`}
             >
-              <Volume2 className="w-4 h-4" />
-              <span>{engineRunning ? "STOP ENGINE" : "START V8"}</span>
+              <Volume2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span>{engineRunning ? "STOP" : "START V8"}</span>
             </button>
 
             {/* Live Tachometer & RPM Display */}
-            <div className="flex-1 flex flex-col gap-1">
-              <div className="flex justify-between items-center text-[10px] font-mono">
-                <span className="text-zinc-400">4.5L V8 FLAT-PLANE TACHO</span>
-                <span className={`font-bold font-mono ${engineRPM >= 8500 ? "text-red-400 animate-pulse" : "text-gold"}`}>
-                  {engineRunning ? `${engineRPM.toLocaleString()} RPM` : "0 RPM (OFF)"}
+            <div className="flex-1 flex flex-col gap-0.5 sm:gap-1 min-w-0">
+              <div className="flex justify-between items-center text-[8.5px] sm:text-[10px] font-mono">
+                <span className="text-zinc-400 truncate">4.5L V8</span>
+                <span className={`font-bold font-mono whitespace-nowrap ml-1 ${engineRPM >= 8500 ? "text-red-400 animate-pulse" : "text-gold"}`}>
+                  {engineRunning ? `${engineRPM.toLocaleString()} RPM` : "0 RPM"}
                 </span>
               </div>
-              <div className="w-full bg-zinc-900 h-2 rounded-full overflow-hidden border border-zinc-800">
+              <div className="w-full bg-zinc-900 h-1.5 sm:h-2 rounded-full overflow-hidden border border-zinc-800">
                 <div
                   className={`h-full transition-all duration-75 ${
                     engineRPM >= 8500
@@ -1124,79 +1110,80 @@ export default function ThreeCarViewer({ onHotspotSelect, activeHotspotId }: Thr
               onMouseLeave={handleThrottleEnd}
               onTouchStart={handleThrottleStart}
               onTouchEnd={handleThrottleEnd}
-              className={`px-5 py-2.5 rounded-xl font-mono text-xs font-black tracking-widest uppercase transition-all flex items-center gap-2 border select-none cursor-pointer ${
+              className={`px-3 sm:px-5 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl font-mono text-[10px] sm:text-xs font-black tracking-wider uppercase transition-all flex items-center gap-1.5 sm:gap-2 border select-none cursor-pointer flex-shrink-0 ${
                 isThrottling
                   ? "bg-gold text-black border-yellow-300 shadow-[0_0_24px_rgba(255,208,0,0.8)] scale-95"
                   : "bg-zinc-900 text-zinc-200 border-zinc-700 hover:border-gold hover:text-white"
               }`}
             >
-              <Activity className="w-3.5 h-3.5" />
-              <span>REV TO 9K</span>
+              <Activity className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+              <span>REV 9K</span>
             </button>
           </div>
         </div>
       </div>
 
       {/* ── Bottom Dock: Factory Atelier Paints & Explode / Reset Controls ── */}
-      <div className="relative z-20 border-t border-zinc-900 bg-zinc-950/95 backdrop-blur-md px-6 py-3.5 flex flex-wrap items-center justify-between gap-4">
+      <div className="relative z-20 border-t border-zinc-900 bg-zinc-950/95 backdrop-blur-md px-3 sm:px-6 py-2 sm:py-3.5 flex flex-wrap items-center justify-between gap-2 sm:gap-4">
         {/* Ferrari Factory Paint Palette */}
-        <div className="flex items-center gap-3">
-          <span className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest font-semibold hidden sm:inline">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <span className="font-mono text-[9px] sm:text-[10px] text-zinc-500 uppercase tracking-widest font-semibold hidden md:inline">
             Atelier Paint:
           </span>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             {colorOptions.map((c) => (
               <button
                 key={c.name}
                 onClick={() => setPaintColor(c.hex)}
                 title={`${c.name} - ${c.tag}`}
-                className={`relative w-7 h-7 rounded-full transition-all cursor-pointer ${
-                  paintColor === c.hex ? "scale-125 ring-2 ring-gold ring-offset-2 ring-offset-black" : "hover:scale-110 opacity-80"
+                className={`relative w-5 h-5 sm:w-7 sm:h-7 rounded-full transition-all cursor-pointer ${
+                  paintColor === c.hex ? "scale-110 sm:scale-125 ring-2 ring-gold ring-offset-2 ring-offset-black" : "hover:scale-110 opacity-80"
                 }`}
                 style={{ backgroundColor: c.hex }}
               />
             ))}
           </div>
-          <span className="font-mono text-[11px] text-zinc-400 font-semibold ml-1 hidden md:inline">
+          <span className="font-mono text-[10px] sm:text-[11px] text-zinc-400 font-semibold ml-1 hidden lg:inline">
             {colorOptions.find((c) => c.hex === paintColor)?.name}
           </span>
         </div>
 
         {/* View & Assembly Control Buttons */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Parts Directory Toggle Button */}
           <button
             onClick={() => setShowPartsDirectory(!showPartsDirectory)}
-            className={`px-3.5 py-2 rounded-xl font-mono text-[11px] font-bold tracking-widest uppercase transition-all flex items-center gap-2 cursor-pointer border ${
+            className={`px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-lg sm:rounded-xl font-mono text-[9px] sm:text-[11px] font-bold tracking-wider sm:tracking-widest uppercase transition-all flex items-center gap-1.5 sm:gap-2 cursor-pointer border ${
               showPartsDirectory
                 ? "bg-red-600 text-white border-red-500 shadow-md shadow-red-950/40"
                 : "bg-zinc-900 text-zinc-300 hover:text-white hover:bg-zinc-800 border-zinc-800"
             }`}
           >
-            <Sliders className="w-3.5 h-3.5 text-yellow-400" />
-            <span>PARTS DIRECTORY</span>
+            <Sliders className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-yellow-400" />
+            <span className="hidden xs:inline">PARTS</span>
+            <span className="hidden sm:inline">DIRECTORY</span>
           </button>
 
           {/* Explode / Assemble Toggle */}
           <button
             onClick={toggleExplode}
-            className={`px-4 py-2 rounded-xl font-mono text-[11px] font-bold tracking-widest uppercase transition-all flex items-center gap-2 cursor-pointer shadow-md ${
+            className={`px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl font-mono text-[9px] sm:text-[11px] font-bold tracking-wider sm:tracking-widest uppercase transition-all flex items-center gap-1.5 sm:gap-2 cursor-pointer shadow-md ${
               isExploded
                 ? "bg-amber-500 text-black shadow-amber-500/20"
                 : "bg-zinc-900 text-zinc-200 hover:text-white hover:bg-zinc-800 border border-zinc-800"
             }`}
           >
-            <Layers className="w-3.5 h-3.5" />
-            <span>{isExploded ? "ASSEMBLE CAR" : "EXPLODE ALL PARTS"}</span>
+            <Layers className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+            <span>{isExploded ? "ASSEMBLE" : "EXPLODE"}</span>
           </button>
 
           {/* Reset Camera */}
           <button
             onClick={() => setCameraPreset("orbit")}
-            className="p-2 rounded-xl bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 border border-zinc-800 transition-colors cursor-pointer"
+            className="p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-zinc-900 text-zinc-400 hover:text-white hover:bg-zinc-800 border border-zinc-800 transition-colors cursor-pointer"
             title="Reset View"
           >
-            <RotateCcw className="w-4 h-4" />
+            <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
         </div>
       </div>
@@ -1327,7 +1314,7 @@ export default function ThreeCarViewer({ onHotspotSelect, activeHotspotId }: Thr
           </div>
 
           <div className="pt-4 border-t border-zinc-800 text-[10px] font-mono text-zinc-500 flex items-center justify-between">
-            <span>TIP: DOUBLE CLICK CAR TO EXPLODE</span>
+            <span>TIP: TAP PARTS OR USE EXPLODE BUTTON</span>
             <span className="text-red-500 font-bold">360° INTERACTIVE</span>
           </div>
         </div>

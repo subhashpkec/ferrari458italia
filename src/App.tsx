@@ -179,7 +179,7 @@ export default function App() {
               Interactive Ferrari Laboratory
             </h2>
             <p className="text-zinc-400 font-display text-sm md:text-base mt-4 font-light">
-              Toggle headlights & real spotlight projection, start the Tipo F136 FB V8 engine sound simulator, select Manettino modes, rev to 9,000 RPM with F1 steering wheel shift LEDs, switch cinematic camera presets, and double-click to explode all parts into detailed Ferrari engineering dossiers.
+              Toggle headlights & real spotlight projection, start the Tipo F136 FB V8 engine sound simulator, select Manettino modes, rev to 9,000 RPM with F1 steering wheel shift LEDs, switch cinematic camera presets, and tap any part to inspect detailed Ferrari engineering dossiers.
             </p>
           </div>
 

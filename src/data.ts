@@ -18,13 +18,20 @@ export interface FerrariPartDetail {
   engineeringNotes: string;
 }
 
+// Import Ferrari 458 Italia Assets so Vite bundles them properly in production
+import ferrariHeroImg from "./assets/images/ferrari_hero.jpg";
+import ferrariCockpitImg from "./assets/images/ferrari_cockpit.jpg";
+import ferrariEngineImg from "./assets/images/ferrari_engine.jpg";
+import ferrariRearImg from "./assets/images/ferrari_rear.jpg";
+import ferrariTrackImg from "./assets/images/ferrari_track.jpg";
+
 // Authentic Ferrari 458 Italia Images
 export const CAR_IMAGES = {
-  hero: "/src/assets/images/ferrari_hero.jpg",
-  cockpit: "/src/assets/images/ferrari_cockpit.jpg",
-  engine: "/src/assets/images/ferrari_engine.jpg",
-  wing: "/src/assets/images/ferrari_rear.jpg",
-  driving: "/src/assets/images/ferrari_track.jpg",
+  hero: ferrariHeroImg,
+  cockpit: ferrariCockpitImg,
+  engine: ferrariEngineImg,
+  wing: ferrariRearImg,
+  driving: ferrariTrackImg,
 };
 
 export const HOTSPOTS: Hotspot[] = [
